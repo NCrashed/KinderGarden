@@ -1,0 +1,28 @@
+package Villager
+
+import public VillagerObj
+import UnitWrapper
+
+/// Wrapper around user that controls state of villager (hungry, heat, sick) 
+/// and his AI. 
+public class Villager extends UnitWrapper
+    real nutrition // from 0 to 1 
+    real heat  // from 0 to 1
+    real immunity // from 0 to 1
+
+    private function selfInit()
+        nutrition = 1.0 
+        heat = 1.0 
+        immunity = 1.0
+
+    construct(unit pu)
+        super(pu)
+        selfInit()
+
+    construct(player p, vec2 loc, angle a)
+        super(createUnit(p, villagerObjectId, loc, a))
+        selfInit()
+
+    
+
+    

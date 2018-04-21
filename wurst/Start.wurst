@@ -1,6 +1,6 @@
 package Start
 
-import VillagerObj
+import Villager
 
 /// Maximum players the map is designed for
 constant playingPlayers = 6
@@ -10,7 +10,7 @@ function spawnInitVillagers(player p)
     let startx = GetPlayerStartLocationX(p)
     let starty = GetPlayerStartLocationY(p)
     let uang = GetRandomReal(0, 180).asAngleDegrees() 
-    createUnit(p, villagerObjectId, vec2(startx, starty), uang)
+    new Villager(p, vec2(startx, starty), uang)
 
 init
     for i=0 to playingPlayers 
