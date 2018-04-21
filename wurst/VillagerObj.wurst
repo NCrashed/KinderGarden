@@ -1,0 +1,12 @@
+package VillagerObj
+
+import UnitObjEditing
+
+@compiletime public constant villagerObjectId = 'u001'
+
+@compiletime function villagerObject()
+    let u = new UnitDefinition(villagerObjectId, 'hpea')
+    u.setName("Villager")
+    u.setModelFile("units\\critters\\VillagerMan\\VillagerMan")
+    
+    

@@ -1,0 +1,21 @@
+package Start
+
+import VillagerObj
+
+/// Maximum players the map is designed for
+constant playingPlayers = 6
+
+/// Spawn initial units for given player
+function spawnInitVillagers(player p) 
+    let startx = GetPlayerStartLocationX(p)
+    let starty = GetPlayerStartLocationY(p)
+    let uang = GetRandomReal(0, 180).asAngleDegrees() 
+    createUnit(p, villagerObjectId, vec2(startx, starty), uang)
+
+init
+    for i=0 to playingPlayers 
+        let p = playerFromIndex(i)
+        if GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING 
+            spawnInitVillagers(p)
+            
+
