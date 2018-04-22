@@ -1,0 +1,9 @@
+package Gender
+
+/// Gender of villager or another unit 
+public enum Gender
+    /// Male cannot be pregnant, but have bonuses in endurity and force
+    MALE 
+    /// Can be pregnant (cannot work when pregnant), have bonuses in ill resistance
+    /// and TODO
+    FEMALE 

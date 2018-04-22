@@ -1,0 +1,27 @@
+package Consumer
+
+import Resources
+
+/// Consumers can be aggregated to large groups.
+/// That is used to display summary for player about 
+/// consuming a resource by category. 
+public enum ConsumeCategory 
+    /// Consumation of non army population
+    PEACEFULL_POPULATION 
+    /// Consumation of armed population 
+    ARMY
+    /// Consumation by building 
+    BUILDING
+
+/// Defines an entity that consumes food periodically
+public interface FoodConsumer
+    /// How much food is consumed by the consumer per one consuming tick
+    function foodPerTick() returns food 
+    /// If caller of the interface cannot provide food for the consumer
+    /// he should call the function with 0 to apply effects of 
+    /// lacking of the resource and with 'foodPerTick' if the required
+    /// food is consumed. 
+    function foodConsumed(food consumed)
+    /// Get consuming category to aggregate results for player
+    function foodConsumeCategory() returns ConsumeCategory
+    

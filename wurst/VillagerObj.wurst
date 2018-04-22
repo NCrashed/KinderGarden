@@ -1,12 +1,30 @@
 package VillagerObj
 
 import UnitObjEditing
+import Gender 
 
-@compiletime public constant villagerObjectId = 'u001'
+@compiletime public constant villagerMaleObjectId = 'u001'
+@compiletime public constant villagerFemaleObjectId = 'u002'
 
-@compiletime function villagerObject()
-    let u = new UnitDefinition(villagerObjectId, 'hpea')
+@compiletime function villagerMaleObject()
+    let u = new UnitDefinition(villagerMaleObjectId, 'hpea')
     u.setName("Villager")
+    u.setArtSpecial("ReplaceableTextures\\CommandButtons\\BTNVillagerMan.blp")
     u.setModelFile("units\\critters\\VillagerMan\\VillagerMan")
-    
-    
+    u.setUnitSoundSet("VillagerMan")
+
+@compiletime function villagerFemaleObject()
+    let u = new UnitDefinition(villagerFemaleObjectId, 'hpea')
+    u.setName("Villager")
+    u.setArtSpecial("ReplaceableTextures\\CommandButtons\\BTNVillagerWoman.blp")
+    u.setModelFile("units\\critters\\VillagerWoman\\VillagerWoman")
+    u.setUnitSoundSet("VillagerWoman")
+
+public function villagerObjectId(Gender gender) returns int
+    switch gender 
+        case MALE 
+            return villagerMaleObjectId
+        case FEMALE 
+            return villagerFemaleObjectId
+        default // don't let a feminist to see the following line ever
+            return villagerMaleObjectId

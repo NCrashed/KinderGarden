@@ -1,0 +1,4 @@
+package MyMath
+
+public function clamp(real minval, real maxval, real val) returns real 
+    return val < minval ? minval : (val > maxval ? maxval : val)

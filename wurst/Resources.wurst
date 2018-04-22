@@ -1,0 +1,18 @@
+/// Defines wrapper and functions to work with game resources 
+/// like food, gold and wood.
+package Resources
+
+/// Wood amount wrapped to enforce strong typing
+public tuple wood(real value)
+
+/// Gold amount wrapped to enforce strong typing
+public tuple gold(real value)
+
+/// Food amount wrapped to enforce strong typing
+public tuple food(real value)
+
+/// Stone amount wrapped to enforce strong typing 
+public tuple stone(real value)
+
+/// Iron amount wrapped to enforce strong typing
+public tuple iron(real value)

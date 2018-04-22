@@ -10,7 +10,7 @@ function spawnInitVillagers(player p)
     let startx = GetPlayerStartLocationX(p)
     let starty = GetPlayerStartLocationY(p)
     let uang = GetRandomReal(0, 180).asAngleDegrees() 
-    new Villager(p, vec2(startx, starty), uang)
+    new Villager(p, vec2(startx, starty), uang, Gender.FEMALE)
 
 init
     for i=0 to playingPlayers 

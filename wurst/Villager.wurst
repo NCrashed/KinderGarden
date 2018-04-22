@@ -1,28 +1,65 @@
 package Villager
 
+import Consumer
+import public Gender
 import public VillagerObj
 import UnitWrapper
+import Resources
+import MyMath 
+
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
-public class Villager extends UnitWrapper
+public class Villager extends UnitWrapper implements FoodConsumer
+    Gender gender 
     real nutrition // from 0 to 1 
     real heat  // from 0 to 1
     real immunity // from 0 to 1
 
-    private function selfInit()
+    real foodConsumeSpd
+    real heatConsumeSpd 
+
+    private function selfInit(Gender pgender)
+        gender = pgender
         nutrition = 1.0 
         heat = 1.0 
         immunity = 1.0
+        foodConsumeSpd = 0.1 
+        heatConsumeSpd = 0.1 
 
-    construct(unit pu)
+    /// Construct from already created unit 
+    construct(unit pu, Gender pgender)
         super(pu)
-        selfInit()
+        selfInit(pgender)
 
-    construct(player p, vec2 loc, angle a)
-        super(createUnit(p, villagerObjectId, loc, a))
-        selfInit()
+    /// Create unit for player at given location and angle and init villager 
+    /// from it.
+    construct(player p, vec2 loc, angle a, Gender pgender)
+        super(createUnit(p, villagerObjectId(pgender), loc, a))
+        selfInit(pgender)
 
+    /// Setting nutrition with guarding that value is in range [0, 1]
+    function setNutrition(real nutrition) 
+        this.nutrition = clamp(0, 1, nutrition)
     
+    // Returns current nutrition of villager in range of [0, 1]
+    function getNutrition() returns real 
+        return nutrition 
 
+    /// From FoodConsumer
+    function foodPerTick() returns food 
+        return food(1)
     
+    /// From FoodConsumer
+    function foodConsumed(food consumed) 
+        let required = foodPerTick()
+        if consumed.value > 0.0 
+            if nutrition < 1.0 
+                setNutrition(nutrition + foodConsumeSpd * consumed.value / required.value)
+        else 
+            if nutrition > 0.0 
+                setNutrition(nutrition - foodConsumeSpd * consumed.value / required.value)
+    
+    /// From FoodConsumer
+    function foodConsumeCategory() returns ConsumeCategory
+        return ConsumeCategory.PEACEFULL_POPULATION
