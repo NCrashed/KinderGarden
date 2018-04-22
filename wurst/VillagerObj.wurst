@@ -3,8 +3,8 @@ package VillagerObj
 import UnitObjEditing
 import Gender 
 
-@compiletime public constant villagerMaleObjectId = 'u001'
-@compiletime public constant villagerFemaleObjectId = 'u002'
+public constant villagerMaleObjectId = 'u001'
+public constant villagerFemaleObjectId = 'u002'
 
 @compiletime function villagerMaleObject()
     let u = new UnitDefinition(villagerMaleObjectId, 'hpea')
@@ -12,6 +12,7 @@ import Gender
     u.setArtSpecial("ReplaceableTextures\\CommandButtons\\BTNVillagerMan.blp")
     u.setModelFile("units\\critters\\VillagerMan\\VillagerMan")
     u.setUnitSoundSet("VillagerMan")
+    u.setFoodCost(0)
 
 @compiletime function villagerFemaleObject()
     let u = new UnitDefinition(villagerFemaleObjectId, 'hpea')
@@ -19,6 +20,7 @@ import Gender
     u.setArtSpecial("ReplaceableTextures\\CommandButtons\\BTNVillagerWoman.blp")
     u.setModelFile("units\\critters\\VillagerWoman\\VillagerWoman")
     u.setUnitSoundSet("VillagerWoman")
+    u.setFoodCost(0)
 
 public function villagerObjectId(Gender gender) returns int
     switch gender 

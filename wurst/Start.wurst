@@ -12,10 +12,17 @@ function spawnInitVillagers(player p)
     let uang = GetRandomReal(0, 180).asAngleDegrees() 
     new Villager(p, vec2(startx, starty), uang, Gender.FEMALE)
 
+/// Setup initial resources for player
+function setupResources(player p)
+    SetPlayerState(p, PLAYER_STATE_RESOURCE_FOOD_USED, 1000)
+    SetPlayerState(p, PLAYER_STATE_LUMBER_GATHERED, 150)
+    SetPlayerState(p, PLAYER_STATE_GOLD_GATHERED, 50)
+
 init
     for i=0 to playingPlayers 
         let p = playerFromIndex(i)
         if GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING 
             spawnInitVillagers(p)
+            setupResources(p)
             
 
