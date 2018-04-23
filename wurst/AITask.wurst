@@ -1,0 +1,17 @@
+package AITask
+
+/// Describes interface which each AI behavior module should implement 
+public interface AITask<T>
+    /// The more high number returns the call the more important the task 
+    function taskPriority() returns int 
+    
+    /// Check whether the unit can perform the task or not
+    function canPerformTask(T u) returns bool 
+
+    /// Begin the task, unit decides to perform the task 
+    function startTask(T u)
+
+    /// End the task, unit decides to stop doing the task
+    function endTask(T u)
+
+

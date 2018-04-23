@@ -1,6 +1,10 @@
 /// Helpers for operation on arrays 
 package Array
 
+/// Way to check array element (usual lambda)
+public interface ArrayPredicate<T> 
+    function check(T a) returns bool
+
 /// Inherit this to insert controlled array of T's into your class 
 public module StaticArray<T>
     static T array arrayItems 
@@ -17,6 +21,13 @@ public module StaticArray<T>
     static function arrayLength() returns int
         return itemsCount
     
+    /// Find first element index or return -1 with given comparator
+    static function arrayFindElem(ArrayPredicate<T> cb) returns int 
+        for i=0 to itemsCount-1 
+            if cb.check(arrayItems[i]) 
+                return i 
+        return -1 
+    
     /// Removing element at given index and closes the new gap 
     /// with last element of array (if any)
     static function arrayRemoveWithPatch(int i) 
@@ -25,6 +36,14 @@ public module StaticArray<T>
             itemsCount--
         else if i == itemsCount-1
             itemsCount--
+
+    /// Removing first element satisfying predicate and closes the new gap 
+    /// with last element of array (if any)
+    static function arrayRemoveWithPatch(ArrayPredicate<T> cb)
+        for i=0 to itemsCount-1 
+            if cb.check(arrayItems[i]) 
+                arrayRemoveWithPatch(i)
+                return
 
     /// Get element of array by index (don't perform bound checks)
     static function getArrayItem(int i) returns T 

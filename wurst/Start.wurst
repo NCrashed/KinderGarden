@@ -14,7 +14,7 @@ function spawnInitVillagers(player p)
 
 /// Setup initial resources for player
 function setupResources(player p)
-    SetPlayerState(p, PLAYER_STATE_RESOURCE_FOOD_USED, 5)
+    SetPlayerState(p, PLAYER_STATE_RESOURCE_FOOD_USED, 80)
     SetPlayerState(p, PLAYER_STATE_LUMBER_GATHERED, 150)
     SetPlayerState(p, PLAYER_STATE_GOLD_GATHERED, 50)
 

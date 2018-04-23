@@ -1,0 +1,25 @@
+/// My helpers to work with timers
+package TimerHelpers
+
+import TimerUtils
+
+/// Allows to embedd timer to class 
+public module EmbeddedTimerPeriodic
+    private timer t
+    
+    protected abstract function callTimer(thistype cb)
+
+    function start(real time)
+        this.t = getTimer()
+        t.setData(this castTo int)
+        t.startPeriodic(time, function staticCallback)
+ 
+    function stop()
+        t.pause()
+    
+    private static function staticCallback()
+        let cb = (GetExpiredTimer().getData() castTo thistype)
+        cb.callTimer(cb)
+        
+    ondestroy
+        t.release()

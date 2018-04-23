@@ -1,5 +1,6 @@
 package Villager
 
+import AITask
 import Consumer
 import public Gender
 import public VillagerObj
@@ -7,6 +8,9 @@ import UnitWrapper
 import Resources
 import MyMath 
 import UnitHelpers
+import TimerHelpers
+import LinkedList
+import Array 
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
@@ -22,12 +26,24 @@ public class Villager extends UnitWrapper implements FoodConsumer
 
     bool hasHungryBuff = false // debuff ability is added
 
+    LinkedList<AITask<Villager>> tasks // Holds all known tasks for this unit
+    AITask<Villager> currentTask = null 
+    static timer aiTickTimer = CreateTimer()
+    use StaticArray<Villager>
+
     private function selfInit(Gender pgender)
         gender = pgender
+        let collectFood = new TaskCollectFood()
+        tasks = new LinkedList<AITask<Villager>>()
+        tasks.add(collectFood)
         FoodConsumerAdded.addArrayItem(this)
+        addArrayItem(this)
 
     override function onDestroy()
         FoodConsumerRemoved.addArrayItem(this)
+        arrayRemoveWithPatch() (Villager a) -> 
+            return a == this
+        destroy tasks
 
     /// Construct from already created unit 
     construct(unit pu, Gender pgender)
@@ -80,3 +96,46 @@ public class Villager extends UnitWrapper implements FoodConsumer
     /// From FoodConsumer
     function foodConsumerOwner() returns player 
         return GetOwningPlayer(u)
+
+    /// Perform task calculations for all known villagers 
+    static function tickAIAll()
+        for i=0 to arrayLength()-1
+            getArrayItem(i).tickAI()
+    
+    /// Perform task calculation for current village 
+    function tickAI()
+        
+init 
+    Villager.aiTickTimer.startPeriodic(3) -> 
+        Villager.tickAIAll()
+        
+/// Task that each villager do if not busy with another tasks
+class TaskCollectFood implements AITask<Villager>
+    use EmbeddedTimerPeriodic
+    Villager v 
+
+    /// Least important 
+    function taskPriority() returns int 
+        return 0
+    
+    /// Any villager can perform the task
+    function canPerformTask(Villager _v) returns bool 
+        return true 
+    
+    /// Start collecting food 
+    function startTask(Villager pv)
+        v = pv 
+        start(2)
+
+    /// Stop collecting food 
+    function endTask(Villager _pv)
+        v = null 
+        stop()
+    
+    override function callTimer(thistype t)
+        let u = t.v.getUnit()
+        let pos = u.getPos()
+        let dx = GetRandomReal(-100, 100)
+        let dy = GetRandomReal(-100, 100)
+        let newPos = pos + vec2(dx, dy)
+        u.issuePointOrder("move", newPos)
