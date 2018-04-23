@@ -1,0 +1,35 @@
+/// Helpers for operation on arrays 
+package Array
+
+/// Inherit this to insert controlled array of T's into your class 
+public module StaticArray<T>
+    static T array arrayItems 
+    static int itemsCount = 0
+
+    /// Add item to array and return its index 
+    static function addArrayItem(T a) returns int 
+        let i = itemsCount 
+        arrayItems[i] = a 
+        itemsCount++
+        return i 
+
+    /// Returns current length of array 
+    static function arrayLength() returns int
+        return itemsCount
+    
+    /// Removing element at given index and closes the new gap 
+    /// with last element of array (if any)
+    static function arrayRemoveWithPatch(int i) 
+        if i < itemsCount-1
+            arrayItems[i] = arrayItems[itemsCount-1]
+            itemsCount--
+        else if i == itemsCount-1
+            itemsCount--
+
+    /// Get element of array by index (don't perform bound checks)
+    static function getArrayItem(int i) returns T 
+        return arrayItems[i]
+    
+    /// Cleanup array, length becomes 0
+    static function arrayClear() 
+        itemsCount = 0

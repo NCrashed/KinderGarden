@@ -3,9 +3,12 @@ package UnitWrapper
 import UnitIndexer
 
 /// Wrapper around user that automatically is destroyed when unit is removed or decayed.
-public class UnitWrapper 
+public abstract class UnitWrapper 
     unit u
     static hashtable instances
+
+    /// Called when the instance of class is destroyed
+    abstract function onDestroy()
 
     /// Wrap existing unit
     construct(unit pu)
@@ -13,6 +16,7 @@ public class UnitWrapper
         instances.saveInt(pu.getHandleId(), 0, this castTo int)
 
     ondestroy
+        onDestroy()
         instances.removeInt(u.getHandleId(), 0)
         u.remove()
     

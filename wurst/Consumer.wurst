@@ -1,6 +1,7 @@
 package Consumer
 
 import Resources
+import Array 
 
 /// Consumers can be aggregated to large groups.
 /// That is used to display summary for player about 
@@ -14,14 +15,27 @@ public enum ConsumeCategory
     BUILDING
 
 /// Defines an entity that consumes food periodically
+///
+/// Note that all consumers should also handle add/remove 
+/// events via 'FoodConsumerAdded' and 'FoodConsumerRemoved'
 public interface FoodConsumer
-    /// How much food is consumed by the consumer per one consuming tick
-    function foodPerTick() returns food 
+    /// How much food is consumed by the consumer per one second
+    function foodPerSecond() returns food 
     /// If caller of the interface cannot provide food for the consumer
     /// he should call the function with 0 to apply effects of 
     /// lacking of the resource and with 'foodPerTick' if the required
-    /// food is consumed. 
-    function foodConsumed(food consumed)
+    /// food is consumed.
+    /// dt parameter holds amount of seconds since last tick 
+    function foodConsumed(food consumed, real dt)
     /// Get consuming category to aggregate results for player
     function foodConsumeCategory() returns ConsumeCategory
-    
+    /// Whom resources the consumer should consume
+    function foodConsumerOwner() returns player 
+
+/// Here consumers are added theirselve to allow tracking new consumers
+public class FoodConsumerAdded 
+    use StaticArray<FoodConsumer>
+
+/// Here consumers are added theirselve to allow tracking removed consumers
+public class FoodConsumerRemoved 
+    use StaticArray<FoodConsumer> 

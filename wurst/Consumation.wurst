@@ -1,0 +1,48 @@
+/// Here the cycle of consumation is located
+package Consumation
+
+import ClosureTimers
+import Consumer
+import Array 
+import Resources
+
+/// Period of applying consuming changes 
+public constant consumeTick = 1.0
+
+/// Holds array of current food consumers
+class FoodConsumers 
+    use StaticArray<FoodConsumer> 
+    
+    /// Iterate over all consumers and consume food
+    static function apply()
+        handleAdded()
+        handleRemoved()
+        let n = arrayLength()
+        for i=0 to n-1
+            let consumer = getArrayItem(i)
+            let owner = consumer.foodConsumerOwner()
+            let available = I2R(GetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED))
+            let needConsume = consumer.foodPerSecond().value * consumeTick
+            real consumed = available >= needConsume ? needConsume : available
+            integer newValue = R2I(available-consumed)
+            SetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED, newValue)
+            consumer.foodConsumed(food(consumed), consumeTick)
+    
+    /// Add all added consumers using intermidiate array 
+    static function handleAdded()
+        let n = FoodConsumerAdded.arrayLength()
+        for i=0 to n-1
+            let a = FoodConsumerAdded.getArrayItem(i)
+            addArrayItem(a)
+        FoodConsumerAdded.arrayClear()
+        
+    /// Remove all removed consumer using intermidiate array
+    static function handleRemoved()
+        let n = FoodConsumerRemoved.arrayLength()
+        for i=0 to n-1
+            arrayRemoveWithPatch(i)
+        FoodConsumerAdded.arrayClear()
+
+init 
+    doPeriodically(consumeTick) cb -> 
+        FoodConsumers.apply()

@@ -26,6 +26,10 @@ public class Villager extends UnitWrapper implements FoodConsumer
         immunity = 1.0
         foodConsumeSpd = 0.1 
         heatConsumeSpd = 0.1 
+        FoodConsumerAdded.addArrayItem(this)
+
+    override function onDestroy()
+        FoodConsumerRemoved.addArrayItem(this)
 
     /// Construct from already created unit 
     construct(unit pu, Gender pgender)
@@ -47,19 +51,23 @@ public class Villager extends UnitWrapper implements FoodConsumer
         return nutrition 
 
     /// From FoodConsumer
-    function foodPerTick() returns food 
+    function foodPerSecond() returns food 
         return food(1)
     
     /// From FoodConsumer
-    function foodConsumed(food consumed) 
-        let required = foodPerTick()
+    function foodConsumed(food consumed, real dt) 
+        let required = foodPerSecond().value * dt 
         if consumed.value > 0.0 
             if nutrition < 1.0 
-                setNutrition(nutrition + foodConsumeSpd * consumed.value / required.value)
+                setNutrition(nutrition + foodConsumeSpd * consumed.value / required)
         else 
             if nutrition > 0.0 
-                setNutrition(nutrition - foodConsumeSpd * consumed.value / required.value)
+                setNutrition(nutrition - foodConsumeSpd * consumed.value / required)
     
     /// From FoodConsumer
     function foodConsumeCategory() returns ConsumeCategory
         return ConsumeCategory.PEACEFULL_POPULATION
+
+    /// From FoodConsumer
+    function foodConsumerOwner() returns player 
+        return GetOwningPlayer(u)
