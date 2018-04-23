@@ -12,20 +12,17 @@ import MyMath
 /// and his AI. 
 public class Villager extends UnitWrapper implements FoodConsumer
     Gender gender 
-    real nutrition // from 0 to 1 
-    real heat  // from 0 to 1
-    real immunity // from 0 to 1
+    real nutrition = 1.0 // from 0 to 1 
+    real heat = 1.0  // from 0 to 1
+    real immunity = 1.0 // from 0 to 1
 
-    real foodConsumeSpd
-    real heatConsumeSpd 
+    real foodConsumeSpd = 0.1
+    real heatConsumeSpd = 0.1
+
+    bool hasHungryBuff = false // debuff ability is added
 
     private function selfInit(Gender pgender)
         gender = pgender
-        nutrition = 1.0 
-        heat = 1.0 
-        immunity = 1.0
-        foodConsumeSpd = 0.1 
-        heatConsumeSpd = 0.1 
         FoodConsumerAdded.addArrayItem(this)
 
     override function onDestroy()
@@ -56,13 +53,26 @@ public class Villager extends UnitWrapper implements FoodConsumer
     
     /// From FoodConsumer
     function foodConsumed(food consumed, real dt) 
+        print("Nutrition")
+        print(nutrition)
+        print("consumed")
+        print(consumed.value)
         let required = foodPerSecond().value * dt 
+
         if consumed.value > 0.0 
             if nutrition < 1.0 
-                setNutrition(nutrition + foodConsumeSpd * consumed.value / required)
+                let nutritionChange = foodConsumeSpd * consumed.value / required
+                setNutrition(nutrition + nutritionChange)
+                if hasHungryBuff
+                    UnitRemoveAbility(u, hungryBuff.abilId)
+                    hasHungryBuff = false
         else 
             if nutrition > 0.0 
-                setNutrition(nutrition - foodConsumeSpd * consumed.value / required)
+                let nutritionChange = foodConsumeSpd
+                setNutrition(nutrition - nutritionChange)
+            else if not hasHungryBuff
+                UnitAddAbility(u, hungryBuff.abilId)
+                hasHungryBuff = true
     
     /// From FoodConsumer
     function foodConsumeCategory() returns ConsumeCategory

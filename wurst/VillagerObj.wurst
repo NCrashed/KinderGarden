@@ -1,6 +1,7 @@
 package VillagerObj
 
 import UnitObjEditing
+import public BuffObjEditing
 import Gender 
 
 public constant villagerMaleObjectId = 'u001'
@@ -30,3 +31,6 @@ public function villagerObjectId(Gender gender) returns int
             return villagerFemaleObjectId
         default // don't let a feminist to see the following line ever
             return villagerMaleObjectId
+
+/// Hungry debuff object
+public constant hungryBuff = compiletime(createDummyBuffObject("Hungry", "This unit is hungry. It produces unhappinnes and have reduced work speed and dies slowly.", "ReplaceableTextures\\CommandButtons\\BTNMonsterLure.blp", "Abilities\\Spells\\NightElf\\shadowstrike\\shadowstrike.mdl", "overhead"))
