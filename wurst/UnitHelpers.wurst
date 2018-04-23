@@ -1,0 +1,10 @@
+/// Helper functions for units 
+package UnitHelpers
+
+/// Applying damage for unit without any defense and buffs in mind. Kills unit if not enough hp.
+public function unit.damage(real amount)
+    let hp = this.getHP()
+    if hp > amount 
+        this.addHP(-amount)
+    else 
+        this.kill()
