@@ -14,6 +14,7 @@ public constant villagerFemaleObjectId = 'u002'
     u.setModelFile("units\\critters\\VillagerMan\\VillagerMan")
     u.setUnitSoundSet("VillagerMan")
     u.setFoodCost(0)
+    u.setHitPointsRegenerationType("none")
 
 @compiletime function villagerFemaleObject()
     let u = new UnitDefinition(villagerFemaleObjectId, 'hpea')
@@ -22,6 +23,7 @@ public constant villagerFemaleObjectId = 'u002'
     u.setModelFile("units\\critters\\VillagerWoman\\VillagerWoman")
     u.setUnitSoundSet("VillagerWoman")
     u.setFoodCost(0)
+    u.setHitPointsRegenerationType("none")
 
 public function villagerObjectId(Gender gender) returns int
     switch gender 
