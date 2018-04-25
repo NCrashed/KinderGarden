@@ -1,16 +1,20 @@
 package Villager
 
 import AITask
+import Array 
 import Consumer
+import LinkedList
+import MyMath 
 import public Gender
 import public VillagerObj
-import UnitWrapper
 import Resources
-import MyMath 
-import UnitHelpers
 import TimerHelpers
-import LinkedList
-import Array 
+import TimerUtils
+import UnitHelpers
+import UnitWrapper
+
+/// Amount of seconds after an order a villager can decide what to do on his own
+@configurable constant real villagerIdleTimeout = 2
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
@@ -25,6 +29,9 @@ public class Villager extends UnitWrapper implements FoodConsumer
     real hungryDps = 2
 
     bool hasHungryBuff = false // debuff ability is added
+    bool isIdle = true 
+    timer idleTimer = CreateTimer() 
+    bool orderMask = false 
 
     LinkedList<AITask<Villager>> tasks // Holds all known tasks for this unit
     AITask<Villager> currentTask = null 
@@ -44,6 +51,7 @@ public class Villager extends UnitWrapper implements FoodConsumer
         arrayRemoveWithPatch() (Villager a) -> 
             return a == this
         destroy tasks
+        idleTimer.release()
 
     /// Construct from already created unit 
     construct(unit pu, Gender pgender)
@@ -104,11 +112,83 @@ public class Villager extends UnitWrapper implements FoodConsumer
     
     /// Perform task calculation for current village 
     function tickAI()
-        
+        if isIdle 
+            let nextTask = selectTask()
+            if currentTask == null 
+                currentTask = nextTask
+                currentTask.startTask(this)
+            else if currentTask.taskPriority() < nextTask.taskPriority() or currentTask.isFinished()  
+                currentTask.endTask(this)
+                currentTask = nextTask 
+                currentTask.startTask(this)
+
+    /// Drop current order and mark the villager idle if the input flag is true
+    function dropCurrentTask(bool markIdle)
+        idleTimer.pause()
+        isIdle = markIdle
+        if currentTask != null 
+            currentTask.endTask(this)
+            currentTask = null 
+        if not isIdle
+            idleTimer.setData(this castTo int)
+            idleTimer.start(villagerIdleTimeout) -> 
+                let v = GetExpiredTimer().getData() castTo Villager
+                v.isIdle = true 
+    
+    /// Find next most important task that we can perform
+    private function selectTask() returns AITask<Villager> 
+        AITask<Villager> result = null 
+        for AITask<Villager> task in tasks
+            if task.canPerformTask(this) 
+                if result == null or result.taskPriority() < task.taskPriority()
+                    result = task 
+        return result 
+    
+    /// Internal function, called when any villager is given a order.  
+    /// Must be a body of a trigger to work properly. 
+    static function someoneGetOrder()
+        let u = GetTriggerUnit()
+        let uw = Villager.getInstanceThatBelongsTo(u)
+        if uw != null 
+            let v = uw castTo Villager 
+            if v != null  
+                if not v.orderMask 
+                    v.dropCurrentTask(false)
+                v.orderMask = false 
+    
+    /// Helper to issue point order with optional masking idle flag setting
+    /// If taskMask set to 'true' the order won't drop current task.
+    function issuePointOrder(string order, vec2 loc, bool taskMask) returns bool
+        if taskMask 
+            orderMask = true 
+        return u.issuePointOrder(order, loc)
+
+    /// Helper to issue target order with optional masking idle flag setting
+    /// If taskMask set to 'true' the order won't drop current task.
+    function issueTargetOrder(string order, widget target, bool taskMask) returns bool
+        if taskMask 
+            orderMask = true 
+        return u.issueTargetOrder(order, target)
+
+    /// Helper to issue immediate order with optional masking idle flag setting
+    /// If taskMask set to 'true' the order won't drop current task.
+    function issueImmediateOrder(string order, bool taskMask) returns bool
+        if taskMask 
+            orderMask = true 
+        return u.issueImmediateOrder(order)
+
+/// Global trigger that whatches after orders to villagers from user
+trigger villagerOrderTrigger = CreateTrigger()
+
 init 
     Villager.aiTickTimer.startPeriodic(3) -> 
         Villager.tickAIAll()
-        
+    TriggerRegisterAnyUnitEventBJ(villagerOrderTrigger, EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER)  
+    TriggerRegisterAnyUnitEventBJ(villagerOrderTrigger, EVENT_PLAYER_UNIT_ISSUED_TARGET_ORDER)  
+    TriggerRegisterAnyUnitEventBJ(villagerOrderTrigger, EVENT_PLAYER_UNIT_ISSUED_ORDER)  
+    TriggerAddAction(villagerOrderTrigger) -> 
+        Villager.someoneGetOrder() 
+     
 /// Task that each villager do if not busy with another tasks
 class TaskCollectFood implements AITask<Villager>
     use EmbeddedTimerPeriodic
@@ -125,17 +205,24 @@ class TaskCollectFood implements AITask<Villager>
     /// Start collecting food 
     function startTask(Villager pv)
         v = pv 
-        start(2)
+        start(5)
+        UnitAddAbility(pv.getUnit(), collectingBuff.abilId)
 
     /// Stop collecting food 
-    function endTask(Villager _pv)
+    function endTask(Villager pv)
         v = null 
         stop()
+        UnitRemoveAbility(pv.getUnit(), collectingBuff.abilId)
     
     override function callTimer(thistype t)
-        let u = t.v.getUnit()
+        let v = t.v
+        let u = v.getUnit()
         let pos = u.getPos()
-        let dx = GetRandomReal(-100, 100)
-        let dy = GetRandomReal(-100, 100)
+        let dx = GetRandomReal(-300, 300)
+        let dy = GetRandomReal(-300, 300)
         let newPos = pos + vec2(dx, dy)
-        u.issuePointOrder("move", newPos)
+        v.issuePointOrder("move", newPos, true)
+
+    /// This task is endless
+    function isFinished() returns bool 
+        return false 

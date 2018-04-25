@@ -35,4 +35,12 @@ public function villagerObjectId(Gender gender) returns int
             return villagerMaleObjectId
 
 /// Hungry debuff object
-public constant hungryBuff = compiletime(createDummyBuffObject("Hungry", "This unit is hungry. It produces unhappinnes and have reduced work speed and dies slowly.", "ReplaceableTextures\\CommandButtons\\BTNMonsterLure.blp", "Abilities\\Spells\\NightElf\\shadowstrike\\shadowstrike.mdl", "overhead"))
+public constant hungryBuff = compiletime(createDummyBuffObject("Hungry", 
+    "This unit is hungry. It produces unhappinnes and have reduced work speed and dies slowly.", 
+    "ReplaceableTextures\\CommandButtons\\BTNMonsterLure.blp", 
+    "Abilities\\Spells\\NightElf\\shadowstrike\\shadowstrike.mdl", 
+    "overhead"))
+/// Tags units that collects food at the current moment
+public constant collectingBuff = compiletime(createDummyBuffObject("Collecting food", 
+    "This villager is collecting food in wilderness. This will increase input to food resource.", 
+    "ReplaceableTextures\\PassiveButtons\\PASBTNMagicImmunity.blp"))

@@ -14,4 +14,6 @@ public interface AITask<T>
     /// End the task, unit decides to stop doing the task
     function endTask(T u)
 
-
+    /// Return 'true' if the task is fully finished and unit need to choose 
+    /// next one
+    function isFinished() returns bool 

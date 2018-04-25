@@ -21,8 +21,8 @@ public abstract class UnitWrapper
         u.remove()
     
     /// Allows to find UnitWrapper that is associated with given unit (or null if no such object)
-    static function getInstanceThatBelongsTo(unit pu) returns UnitWrapper
-        return instances.loadInt(pu.getHandleId(), 0) castTo UnitWrapper
+    static function getInstanceThatBelongsTo(unit pu) returns thistype
+        return instances.loadInt(pu.getHandleId(), 0) castTo thistype
 
     /// Get internal unit
     function getUnit() returns unit 
