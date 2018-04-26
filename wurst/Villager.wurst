@@ -16,6 +16,23 @@ import Producer
 
 /// Amount of seconds after an order a villager can decide what to do on his own
 @configurable constant real villagerIdleTimeout = 2
+/// Amount of time gathering villager stands on same spot
+@configurable constant real foodCollectChangePosTime = 5
+/// Additional +- seconds that are randomly added to 'foodCollectChangePosTime'
+@configurable constant real foodCollectChangePosTimeSpread = 1
+/// Radius of zone that gathering villager will gather
+@configurable constant real gatheringRadius = 500 
+/// Amount of food is collected per second while gathering
+@configurable constant real gatheringBaseFoodProduction = 3 
+/// Basic food consumption for villager per second
+@configurable constant real villagerBaseFoodConsumption = 2 
+
+/// Basic speed of nutrition consumption for villager
+@configurable constant real baseFoodConsumeSpeed = 0.1 
+/// Basic speed of heat consumption for villager
+@configurable constant real baseHeatConsumeSpeed = 0.1 
+/// Default amount of health hungry unit loses per second
+@configurable constant real baseHungryDps = 2 
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
@@ -25,9 +42,9 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
     real heat = 1.0  // from 0 to 1
     real immunity = 1.0 // from 0 to 1
 
-    real foodConsumeSpd = 0.1
-    real heatConsumeSpd = 0.1
-    real hungryDps = 2
+    real foodConsumeSpd = baseFoodConsumeSpeed
+    real heatConsumeSpd = baseHeatConsumeSpeed
+    real hungryDps = baseHungryDps
 
     bool hasHungryBuff = false // debuff ability is added
     bool isIdle = true 
@@ -77,7 +94,7 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
 
     /// From FoodConsumer
     function foodConsumedPerSecond() returns food 
-        return food(1)
+        return food(villagerBaseFoodConsumption)
     
     /// From FoodConsumer
     function foodConsumed(food consumed, real dt) 
@@ -152,9 +169,13 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
             currentTask = null 
         if not isIdle
             idleTimer.setData(this castTo int)
-            idleTimer.start(villagerIdleTimeout) -> 
-                let v = GetExpiredTimer().getData() castTo Villager
-                v.isIdle = true 
+            idleTimer.startPeriodic(villagerIdleTimeout) -> 
+                let t = GetExpiredTimer()
+                let v = t.getData() castTo Villager
+                if v.getUnit().getCurrentOrder() == 0
+                    v.isIdle = true
+                    t.pause()
+
     
     /// Find next most important task that we can perform
     private function selectTask() returns AITask<Villager> 
@@ -214,6 +235,7 @@ init
 class TaskCollectFood implements AITask<Villager>
     use EmbeddedTimerPeriodic
     Villager v 
+    vec2 startPos 
 
     /// Least important 
     function taskPriority() returns int 
@@ -226,7 +248,8 @@ class TaskCollectFood implements AITask<Villager>
     /// Start collecting food 
     function startTask(Villager pv)
         v = pv 
-        start(5)
+        startPos = v.getUnit().getPos()
+        start(foodCollectChangePosTime + GetRandomReal(-foodCollectChangePosTimeSpread, foodCollectChangePosTimeSpread), true)
         UnitAddAbility(pv.getUnit(), collectingBuff.abilId)
 
     /// Stop collecting food 
@@ -238,10 +261,9 @@ class TaskCollectFood implements AITask<Villager>
     override function callTimer(thistype t)
         let v = t.v
         let u = v.getUnit()
-        let pos = u.getPos()
-        let dx = GetRandomReal(-300, 300)
-        let dy = GetRandomReal(-300, 300)
-        let newPos = pos + vec2(dx, dy)
+        let dx = GetRandomReal(-gatheringRadius, gatheringRadius)
+        let dy = GetRandomReal(-gatheringRadius, gatheringRadius)
+        let newPos = startPos + vec2(dx, dy)
         v.issuePointOrder("move", newPos, true)
 
     /// This task is endless
@@ -250,7 +272,7 @@ class TaskCollectFood implements AITask<Villager>
 
     /// Amount of food that is produced by the task per second
     function taskFoodProduction() returns food 
-        return food(3)
+        return food(gatheringBaseFoodProduction)
 
     /// Amount of wood that is produced by the task per second 
     function taskWoodProduction() returns wood 

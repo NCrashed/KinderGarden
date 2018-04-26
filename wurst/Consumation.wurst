@@ -7,7 +7,7 @@ import Array
 import Resources
 
 /// Period of applying consuming changes 
-public constant consumeTick = 1.0
+public constant consumeTick = 5.0
 
 /// Holds array of current food consumers
 class FoodConsumers 

@@ -7,13 +7,18 @@ import TimerUtils
 public module EmbeddedTimerPeriodic
     private timer t
     
+    /// Overload the function in your code, this is called when timer is expired
     protected abstract function callTimer(thistype cb)
 
-    function start(real time)
+    /// Start internal timer, if the second flag is on, trigger timer action immediatelly
+    function start(real time, bool startCall)
         this.t = getTimer()
         t.setData(this castTo int)
         t.startPeriodic(time, function staticCallback)
- 
+        if startCall
+            callTimer(this)
+
+    /// Stop internal timer 
     function stop()
         t.pause()
     

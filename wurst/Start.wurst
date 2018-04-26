@@ -4,19 +4,32 @@ import Villager
 
 /// Maximum players the map is designed for
 constant playingPlayers = 6
+/// Count of spawned villagers at start of the game
+constant startVillagers = 4 
 
 /// Spawn initial units for given player
 function spawnInitVillagers(player p) 
-    let startx = GetPlayerStartLocationX(p)
-    let starty = GetPlayerStartLocationY(p)
-    let uang = GetRandomReal(0, 180).asAngleDegrees() 
-    new Villager(p, vec2(startx, starty), uang, Gender.FEMALE)
+    var hasMale = false 
+    var hasFemale = false 
+    for i=0 to startVillagers-1 
+        let startx = GetPlayerStartLocationX(p) + GetRandomReal(-200, 200)
+        let starty = GetPlayerStartLocationY(p) + GetRandomReal(-200, 200)
+        let uang = GetRandomReal(0, 180).asAngleDegrees()
+        var gender = GetRandomReal(0, 100) > 50 ? Gender.FEMALE : Gender.MALE  
+        if not hasMale 
+            gender = Gender.MALE 
+            hasMale = true 
+        else if not hasFemale
+            gender = Gender.FEMALE
+            hasFemale = true 
+        new Villager(p, vec2(startx, starty), uang, gender)
 
 /// Setup initial resources for player
 function setupResources(player p)
     SetPlayerState(p, PLAYER_STATE_RESOURCE_FOOD_USED, 80)
-    SetPlayerState(p, PLAYER_STATE_LUMBER_GATHERED, 150)
-    SetPlayerState(p, PLAYER_STATE_GOLD_GATHERED, 50)
+    SetPlayerState(p, PLAYER_STATE_RESOURCE_LUMBER, 150)
+    SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 50)
+    SetFloatGameState(GAME_STATE_TIME_OF_DAY, 12.00)
 
 init
     for i=0 to playingPlayers 

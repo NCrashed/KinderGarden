@@ -7,7 +7,7 @@ import Array
 import Resources
 
 /// Period of applying production changes to resources 
-public constant produceTick = 1.0 
+public constant produceTick = 5.0 
 
 /// Holds array of current food producers
 class FoodProducers 
