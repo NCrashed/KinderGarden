@@ -260,7 +260,6 @@ class TaskCollectFood implements AITask<Villager>
     
     override function callTimer(thistype t)
         let v = t.v
-        let u = v.getUnit()
         let dx = GetRandomReal(-gatheringRadius, gatheringRadius)
         let dy = GetRandomReal(-gatheringRadius, gatheringRadius)
         let newPos = startPos + vec2(dx, dy)
