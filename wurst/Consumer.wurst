@@ -20,7 +20,7 @@ public enum ConsumeCategory
 /// events via 'FoodConsumerAdded' and 'FoodConsumerRemoved'
 public interface FoodConsumer
     /// How much food is consumed by the consumer per one second
-    function foodPerSecond() returns food 
+    function foodConsumedPerSecond() returns food 
     /// If caller of the interface cannot provide food for the consumer
     /// he should call the function with 0 to apply effects of 
     /// lacking of the resource and with 'foodPerTick' if the required

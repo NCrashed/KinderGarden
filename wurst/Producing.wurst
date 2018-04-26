@@ -1,0 +1,47 @@
+/// Here the cycle of consumation is located
+package Producing
+
+import ClosureTimers
+import Producer 
+import Array 
+import Resources
+
+/// Period of applying production changes to resources 
+public constant produceTick = 1.0 
+
+/// Holds array of current food producers
+class FoodProducers 
+    use StaticArray<FoodProducer>
+
+    /// Iterate over all producers and produce food
+    static function apply()
+        handleAdded()
+        handleRemoved() 
+        let n = arrayLength()
+        for i=0 to n-1 
+            let producer = getArrayItem(i)
+            let owner = producer.foodProduceOwner()
+            let produced = producer.foodProducedPerSecond().value * produceTick
+            real oldValue = I2R(GetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED))
+            integer newValue = R2I(oldValue + produced)
+            SetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED, newValue)
+            producer.foodProduced(food(produced), produceTick)
+
+    /// Add all added producers using intermediate array 
+    static function handleAdded()
+        let n = FoodProducerAdded.arrayLength()
+        for i=0 to n-1
+            let a = FoodProducerAdded.getArrayItem(i)
+            addArrayItem(a)
+        FoodProducerAdded.arrayClear()
+    
+    /// Remove all removed producers using intermediate array
+    static function handleRemoved()
+        let n = FoodProducerRemoved.arrayLength()
+        for i=0 to n-1
+            arrayRemoveWithPatch(i)
+        FoodProducerAdded.arrayClear()
+
+init 
+    doPeriodically(produceTick) cb -> 
+        FoodProducers.apply()

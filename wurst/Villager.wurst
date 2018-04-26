@@ -12,13 +12,14 @@ import TimerHelpers
 import TimerUtils
 import UnitHelpers
 import UnitWrapper
+import Producer 
 
 /// Amount of seconds after an order a villager can decide what to do on his own
 @configurable constant real villagerIdleTimeout = 2
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
-public class Villager extends UnitWrapper implements FoodConsumer
+public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
     Gender gender 
     real nutrition = 1.0 // from 0 to 1 
     real heat = 1.0  // from 0 to 1
@@ -44,10 +45,12 @@ public class Villager extends UnitWrapper implements FoodConsumer
         tasks = new LinkedList<AITask<Villager>>()
         tasks.add(collectFood)
         FoodConsumerAdded.addArrayItem(this)
+        FoodProducerAdded.addArrayItem(this)
         addArrayItem(this)
 
     override function onDestroy()
         FoodConsumerRemoved.addArrayItem(this)
+        FoodProducerRemoved.addArrayItem(this)
         arrayRemoveWithPatch() (Villager a) -> 
             return a == this
         destroy tasks
@@ -73,12 +76,12 @@ public class Villager extends UnitWrapper implements FoodConsumer
         return nutrition 
 
     /// From FoodConsumer
-    function foodPerSecond() returns food 
+    function foodConsumedPerSecond() returns food 
         return food(1)
     
     /// From FoodConsumer
     function foodConsumed(food consumed, real dt) 
-        let required = foodPerSecond().value * dt 
+        let required = foodConsumedPerSecond().value * dt 
 
         if consumed.value > 0.0 
             if nutrition < 1.0 
@@ -103,6 +106,24 @@ public class Villager extends UnitWrapper implements FoodConsumer
 
     /// From FoodConsumer
     function foodConsumerOwner() returns player 
+        return GetOwningPlayer(u)
+
+    /// From FoodProducer
+    function foodProducedPerSecond() returns food 
+        if currentTask == null 
+            return food(0)
+        else 
+            return currentTask.taskFoodProduction()
+
+    /// From FoodProducer
+    function foodProduced(food _produced, real _dt)
+        
+    /// From FoodProducer
+    function foodProduceCategory() returns ProduceCategory
+        return ProduceCategory.VILLAGER
+    
+    /// From FoodProducer 
+    function foodProduceOwner() returns player 
         return GetOwningPlayer(u)
 
     /// Perform task calculations for all known villagers 
@@ -226,3 +247,23 @@ class TaskCollectFood implements AITask<Villager>
     /// This task is endless
     function isFinished() returns bool 
         return false 
+
+    /// Amount of food that is produced by the task per second
+    function taskFoodProduction() returns food 
+        return food(3)
+
+    /// Amount of wood that is produced by the task per second 
+    function taskWoodProduction() returns wood 
+        return wood(0)
+
+    /// Amount of gold that is produced by the task per second 
+    function taskGoldProduction() returns gold 
+        return gold(0)
+
+    /// Amount of stone that is produced by the task per second 
+    function taskStoneProduction() returns stone 
+        return stone(0)
+
+    /// Amount of iron that is produced by the task per second 
+    function taskIronProduction() returns iron 
+        return iron(0)

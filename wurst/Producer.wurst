@@ -1,0 +1,34 @@
+package Producer
+
+import Resources 
+import Array 
+
+/// Producers can be aggregate to large groups 
+/// that is used to display summary for player 
+/// about producing a resource by category 
+public enum ProduceCategory
+    /// Produced by gathering by villagers 
+    VILLAGER 
+
+/// Defines an entity that produces food periodically
+///
+/// Note that all producers should also handle add/remove 
+/// events via 'FoodProducerAdded' and 'FoodProducerRemoved'
+public interface FoodProducer 
+    /// How much food is produced per one second
+    function foodProducedPerSecond() returns food
+    /// Called when a food is produced by this producer (called by special thread)
+    /// dt parameter holds amount of seconds since last call. 
+    function foodProduced(food produced, real dt)
+    /// Get producing category to aggregate results for player
+    function foodProduceCategory() returns ProduceCategory
+    /// Who is owner, whom resources are increased
+    function foodProduceOwner() returns player 
+
+/// Here producers are added theirselve to allow tracking new producers by other systems
+public class FoodProducerAdded 
+    use StaticArray<FoodProducer> 
+
+/// Here producers are added theirselve to allow tracking remove producers by other systems 
+public class FoodProducerRemoved 
+    use StaticArray<FoodProducer>
