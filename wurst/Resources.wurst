@@ -16,3 +16,6 @@ public tuple stone(real value)
 
 /// Iron amount wrapped to enforce strong typing
 public tuple iron(real value)
+
+/// Period of applying consuming/production changes 
+public constant resourceTick = 5.0

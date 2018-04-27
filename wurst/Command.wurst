@@ -1,0 +1,22 @@
+package Command
+
+import Constants
+import Villager
+import ClosureForGroups
+
+class Command 
+    trigger t = CreateTrigger() 
+
+    construct(string cmd, code callback)
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            t.registerPlayerChatEvent(p, cmd, false)
+        t.addAction(callback)
+
+init 
+    new Command("villinfo") -> 
+        let p = GetTriggerPlayer()
+        forUnitsSelected(p) u -> 
+            let v = Villager.getInstanceThatBelongsTo(u) castTo Villager
+            if v != null 
+                print(v.getNutrition())

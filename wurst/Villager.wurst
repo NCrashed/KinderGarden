@@ -70,6 +70,13 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
         FoodProducerRemoved.addArrayItem(this)
         arrayRemoveWithPatch() (Villager a) -> 
             return a == this
+        if currentTask != null 
+            currentTask.endTask(this)
+            if currentTask.isPrivate()
+                destroy currentTask
+        for AITask<Villager> task in tasks 
+            if task != null and task != currentTask and task.isPrivate()
+                destroy task
         destroy tasks
         idleTimer.release()
 
@@ -288,3 +295,7 @@ class TaskCollectFood implements AITask<Villager>
     /// Amount of iron that is produced by the task per second 
     function taskIronProduction() returns iron 
         return iron(0)
+    
+    /// If task is personal for unit, it can be deleted when unit dies
+    function isPrivate() returns bool 
+        return true

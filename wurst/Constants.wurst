@@ -1,0 +1,6 @@
+package Constants
+
+/// Maximum players the map is designed for
+public constant playingPlayers = 6
+/// Count of spawned villagers at start of the game
+public constant startVillagers = 4 

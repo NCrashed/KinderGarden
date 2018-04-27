@@ -4,11 +4,20 @@ import UnitObjEditing
 import public BuffObjEditing
 import Gender 
 import ObjEditingNatives
+import ObjectIds 
 
 public constant villagerBaseId = 'hpea'
+public constant lumberMillBaseId = 'hlum' 
 
 public constant villagerMaleObjectId = 'u001'
 public constant villagerFemaleObjectId = 'u002'
+public constant lumberMillObjectId = 'u003'
+
+@compiletime function lumberMillObject()
+    let u = new BuildingDefinition(lumberMillObjectId, lumberMillBaseId)
+    u.setLumberCost(50)
+    u.setGoldCost(0)
+    u.def.setString("ures", "")
 
 @compiletime function villagerMaleObject()
     let u = new UnitDefinition(villagerMaleObjectId, villagerBaseId)
@@ -18,7 +27,7 @@ public constant villagerFemaleObjectId = 'u002'
     u.setUnitSoundSet("VillagerMan")
     u.setFoodCost(0)
     u.setHitPointsRegenerationType("none")
-    u.def.setString("ubui", "")
+    u.def.setString("ubui", int2fourchar(lumberMillObjectId))
     
 @compiletime function villagerFemaleObject()
     let u = new UnitDefinition(villagerFemaleObjectId, villagerBaseId)
@@ -28,7 +37,7 @@ public constant villagerFemaleObjectId = 'u002'
     u.setUnitSoundSet("VillagerWoman")
     u.setFoodCost(0)
     u.setHitPointsRegenerationType("none")
-    u.def.setString("ubui", "")
+    u.def.setString("ubui", int2fourchar(lumberMillObjectId))
 
 public function villagerObjectId(Gender gender) returns int
     switch gender 

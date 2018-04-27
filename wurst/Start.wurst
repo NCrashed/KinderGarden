@@ -1,11 +1,11 @@
 package Start
 
 import Villager
-
-/// Maximum players the map is designed for
-constant playingPlayers = 6
-/// Count of spawned villagers at start of the game
-constant startVillagers = 4 
+import Resources
+import Consumation
+import Producing
+import ClosureTimers
+import Constants
 
 /// Spawn initial units for given player
 function spawnInitVillagers(player p) 
@@ -38,4 +38,6 @@ init
             spawnInitVillagers(p)
             setupResources(p)
             
-
+    doPeriodically(resourceTick) cb ->
+        FoodProducers.apply()
+        FoodConsumers.apply()

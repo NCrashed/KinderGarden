@@ -34,3 +34,6 @@ public interface AITask<T>
 
     /// Amount of iron that is produced by the task per second 
     function taskIronProduction() returns iron 
+
+    /// If task is personal for unit, it can be deleted when unit dies
+    function isPrivate() returns bool 
