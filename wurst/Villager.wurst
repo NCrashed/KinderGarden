@@ -61,13 +61,13 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
         let collectFood = new TaskCollectFood()
         tasks = new LinkedList<AITask<Villager>>()
         tasks.add(collectFood)
-        FoodConsumerAdded.addArrayItem(this)
-        FoodProducerAdded.addArrayItem(this)
+        FoodConsumerAdded.triggerAll(this)
+        FoodProducerAdded.triggerAll(this)
         addArrayItem(this)
 
     override function onDestroy()
-        FoodConsumerRemoved.addArrayItem(this)
-        FoodProducerRemoved.addArrayItem(this)
+        FoodConsumerRemoved.triggerAll(this)
+        FoodProducerRemoved.triggerAll(this)
         arrayRemoveWithPatch() (Villager a) -> 
             return a == this
         if currentTask != null 
@@ -162,10 +162,14 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
             if currentTask == null 
                 currentTask = nextTask
                 currentTask.startTask(this)
+                FoodConsumerChanged.triggerAll(this)
+                FoodProducerChanged.triggerAll(this)
             else if currentTask.taskPriority() < nextTask.taskPriority() or currentTask.isFinished()  
                 currentTask.endTask(this)
                 currentTask = nextTask 
                 currentTask.startTask(this)
+                FoodConsumerChanged.triggerAll(this)
+                FoodProducerChanged.triggerAll(this)
 
     /// Drop current order and mark the villager idle if the input flag is true
     function dropCurrentTask(bool markIdle)
@@ -174,6 +178,8 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
         if currentTask != null 
             currentTask.endTask(this)
             currentTask = null 
+            FoodConsumerChanged.triggerAll(this)
+            FoodProducerChanged.triggerAll(this)
         if not isIdle
             idleTimer.setData(this castTo int)
             idleTimer.startPeriodic(villagerIdleTimeout) -> 

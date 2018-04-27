@@ -4,36 +4,80 @@ package Producing
 import Producer 
 import Array 
 import Resources
+import ResourceBoard
+import Constants 
+import ClosureTimers
 
 /// Holds array of current food producers
-public class FoodProducers 
+public class FoodProducers implements FoodProducerAddedCb, FoodProducerRemovedCb, FoodProducerChangedCb
     use StaticArray<FoodProducer>
+    hashtable productionInfo = InitHashtable()
+
+    construct()
+        FoodProducerAdded.register(this)
+        FoodProducerRemoved.register(this)
+        FoodProducerChanged.register(this)
 
     /// Iterate over all producers and produce food
-    static function apply()
-        handleAdded()
-        handleRemoved() 
+    function apply()
+        clearFoodProduce()
         let n = arrayLength()
         for i=0 to n-1 
             let producer = getArrayItem(i)
             let owner = producer.foodProduceOwner()
-            let produced = producer.foodProducedPerSecond().value * resourceTick
+            let produceps =  producer.foodProducedPerSecond()
+            let produced = produceps.value * resourceTick
             real oldValue = I2R(GetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED))
             integer newValue = R2I(oldValue + produced)
             SetPlayerState(owner, PLAYER_STATE_RESOURCE_FOOD_USED, newValue)
             producer.foodProduced(food(produced), resourceTick)
+            addFoodProduce(owner, produceps)
 
-    /// Add all added producers using intermediate array 
-    static function handleAdded()
-        let n = FoodProducerAdded.arrayLength()
-        for i=0 to n-1
-            let a = FoodProducerAdded.getArrayItem(i)
-            addArrayItem(a)
-        FoodProducerAdded.arrayClear()
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            ResourceBoard.getByPlayer(p).setFoodProduced(getFoodTotalProduce(p)) 
     
-    /// Remove all removed producers using intermediate array
-    static function handleRemoved()
-        let n = FoodProducerRemoved.arrayLength()
-        for i=0 to n-1
-            arrayRemoveWithPatch(i)
-        FoodProducerAdded.arrayClear()
+    /// Recalculate all production speed 
+    function recalcProduction()
+        clearFoodProduce()
+        let n = arrayLength()
+        for i=0 to n-1 
+            let producer = getArrayItem(i)
+            let owner = producer.foodProduceOwner()
+            let produceps =  producer.foodProducedPerSecond()
+            addFoodProduce(owner, produceps)
+        
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            ResourceBoard.getByPlayer(p).setFoodProduced(getFoodTotalProduce(p)) 
+    
+    /// Remove all stats from hashtable 
+    function clearFoodProduce()
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            productionInfo.saveReal(p.getHandleId(), 0, 0)
+    
+    /// Add consumation of food to counter of player
+    function addFoodProduce(player p, food v)
+        let pk = p.getHandleId()
+        let oldval = productionInfo.loadReal(pk, 0)
+        productionInfo.saveReal(pk, 0, oldval + v.value)
+
+    /// Get total speed of food consumation per second last tick
+    function getFoodTotalProduce(player p) returns food 
+        return food(productionInfo.loadReal(p.getHandleId(), 0)) 
+
+    /// Add all added consumers using intermediate array 
+    function foodProducerAdded(FoodProducer v)
+        addArrayItem(v)
+        recalcProduction()
+        
+    /// Remove all removed consumer using intermediate array
+    function foodProducerRemoved(FoodProducer v)
+        arrayRemoveWithPatch() (FoodProducer a) -> 
+            return a == v 
+        recalcProduction()
+
+    /// Called when food producer changes stats
+    function foodProducerChanged(FoodProducer _v) 
+        recalcProduction()

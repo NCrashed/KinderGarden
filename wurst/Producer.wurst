@@ -25,10 +25,56 @@ public interface FoodProducer
     /// Who is owner, whom resources are increased
     function foodProduceOwner() returns player 
 
-/// Here producers are added theirselve to allow tracking new producers by other systems
+/// Callback that is called when new food producer is added to global array
+public interface FoodProducerAddedCb 
+    function foodProducerAdded(FoodProducer v)
+    
+/// Global array with callbacks for food producer addition event
 public class FoodProducerAdded 
-    use StaticArray<FoodProducer> 
+    use StaticArray<FoodProducerAddedCb> 
 
-/// Here producers are added theirselve to allow tracking remove producers by other systems 
+    /// Call this to add new consumer callback
+    static function register(FoodProducerAddedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(FoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).foodProducerAdded(v)
+
+/// Callback that is called when new food producer is added to global array
+public interface FoodProducerRemovedCb 
+    function foodProducerRemoved(FoodProducer v)
+
+/// Global array with callbacks for food producer removal event
 public class FoodProducerRemoved 
-    use StaticArray<FoodProducer>
+    use StaticArray<FoodProducerRemovedCb>
+
+    /// Call this to add new callback for producer removed event
+    static function register(FoodProducerRemovedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(FoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).foodProducerRemoved(v)
+
+/// Callback that is called when food producer updates its stats
+public interface FoodProducerChangedCb 
+    function foodProducerChanged(FoodProducer v)
+
+/// Global array with callbacks for food producer changed event
+public class FoodProducerChanged 
+    use StaticArray<FoodProducerChangedCb>
+
+    /// Call this to add new callback for producer changed event
+    static function register(FoodProducerChangedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(FoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).foodProducerChanged(v)

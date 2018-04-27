@@ -1,0 +1,153 @@
+/// Holds API to work with multiboards about resource production/consumption 
+package ResourceBoard
+
+import Constants
+import ClosureTimers
+import Resources 
+
+function multiboarditem.setGreenColor() 
+    this.setValueColor(13, 158, 34, 255)
+
+function multiboarditem.setRedColor() 
+    this.setValueColor(168, 8, 35, 255)
+
+function multiboarditem.setNetColor(real v) 
+    if v >= 0 
+        this.setGreenColor()
+    else if v < 0 
+        this.setRedColor()
+    else
+        this.setValueColor(255, 255, 255, 255) 
+
+function multiboarditem.setRealValue(real v)
+    this.setValue(R2SW(v, 0, 2))
+
+public class ResourceBoard
+    multiboard board = CreateMultiboard()
+    player owner  
+    food foodProduced 
+    food foodConsumed
+    wood woodProduced 
+    wood woodConsumed
+    static hashtable boards = InitHashtable()
+    static hashtable ids = InitHashtable()
+
+    static function getByPlayer(player p) returns ResourceBoard
+        return boards.loadInt(p.getHandleId(), 0) castTo ResourceBoard
+
+    static function updateAllNets()
+        for i=0 to playingPlayers-1 
+            let p = playerFromIndex(i)
+            ResourceBoard.getByPlayer(p).updateNets()
+
+    construct(player p)
+        owner = p 
+        boards.saveInt(p.getHandleId(), 0, this castTo int)
+
+    function initialize()
+        board.setTitle("Production and consumation")
+        board.setRowCount(3)
+        board.setColumnCount(4)
+        board.setItemsStyle(true, false)
+
+        board.getItem(0, 0)
+            ..setValue("Resource")
+            ..setWidth(0.1)
+        board.getItem(0, 1)
+            ..setValue("Produced")
+            ..setWidth(0.07)
+        board.getItem(0, 2)
+            ..setValue("Consumed")
+            ..setWidth(0.07)
+        board.getItem(0, 3)
+            ..setValue("Net")
+            ..setWidth(0.07)
+
+        board.getItem(1, 0)
+            ..setValue("Food")
+            ..setStyle(true, true)
+            ..setWidth(0.1)
+            ..setIcon("ReplaceableTextures\\CommandButtons\\BTNMonsterLure.blp")
+        board.getItem(1, 1)
+            ..setRealValue(0)
+            ..setWidth(0.07)
+            ..setGreenColor()
+        board.getItem(1, 2)
+            ..setRealValue(0)
+            ..setWidth(0.07)
+            ..setRedColor()
+        board.getItem(1, 3)
+            ..setWidth(0.07)
+            ..setRealValue(0)
+
+        board.getItem(2, 0)
+            ..setValue("Wood")
+            ..setStyle(true, true)
+            ..setWidth(0.1)
+            ..setIcon("ReplaceableTextures\\CommandButtons\\BTNBundleOfLumber.blp")
+        board.getItem(2, 1)
+            ..setRealValue(0)
+            ..setWidth(0.07)
+            ..setGreenColor()
+        board.getItem(2, 2)
+            ..setRealValue(0)
+            ..setWidth(0.07)
+            ..setRedColor()
+        board.getItem(2, 3)
+            ..setWidth(0.07)
+            ..setRealValue(0)
+
+    function show(bool flag) 
+        board.display(owner, flag)
+
+    function setFoodProduced(food v)
+        foodProduced = v 
+        board.getItem(1, 1).setRealValue(v.value)
+        deriveFoodNet()
+
+    function setFoodConsumed(food v)
+        foodConsumed = v 
+        board.getItem(1, 2).setRealValue(v.value)
+        deriveFoodNet()
+
+    function deriveFoodNet()
+        let net = food(foodProduced.value - foodConsumed.value)
+        setFoodNet(net)
+
+    function setFoodNet(food v)
+        let vr = v.value 
+        board.getItem(1, 3)
+            ..setNetColor(vr)
+            ..setRealValue(vr)
+        
+    function setWoodProduced(wood v)
+        woodProduced = v
+        board.getItem(2, 1).setRealValue(v.value)
+        deriveWoodNet()
+
+    function setWoodConsumed(wood v)
+        woodConsumed = v
+        board.getItem(2, 2).setRealValue(v.value)
+        deriveWoodNet() 
+    
+    function deriveWoodNet()
+        let net = wood(woodProduced.value - woodConsumed.value)
+        setWoodNet(net)
+        
+    function setWoodNet(wood v)
+        let vr = v.value 
+        board.getItem(2, 3)
+            ..setNetColor(vr)
+            ..setRealValue(vr)
+        
+    function updateNets()
+        deriveFoodNet()
+        deriveWoodNet()
+
+init 
+    for i=0 to playingPlayers-1 
+        let p = playerFromIndex(i)
+        let b = new ResourceBoard(p)
+        doAfter(0.1) -> 
+            b.initialize()
+            b.show(true)

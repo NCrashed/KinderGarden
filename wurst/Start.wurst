@@ -6,6 +6,7 @@ import Consumation
 import Producing
 import ClosureTimers
 import Constants
+import ResourceBoard
 
 /// Spawn initial units for given player
 function spawnInitVillagers(player p) 
@@ -32,12 +33,16 @@ function setupResources(player p)
     SetFloatGameState(GAME_STATE_TIME_OF_DAY, 12.00)
 
 init
-    for i=0 to playingPlayers 
-        let p = playerFromIndex(i)
-        if GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING 
-            spawnInitVillagers(p)
-            setupResources(p)
-            
+    let producers = new FoodProducers()
+    let consumers = new FoodConsumers()
     doPeriodically(resourceTick) cb ->
-        FoodProducers.apply()
-        FoodConsumers.apply()
+        producers.apply()
+        consumers.apply()
+        ResourceBoard.updateAllNets()
+
+    nullTimer() ->
+        for i=0 to playingPlayers 
+            let p = playerFromIndex(i)
+            if GetPlayerSlotState(p) == PLAYER_SLOT_STATE_PLAYING 
+                spawnInitVillagers(p)
+                setupResources(p)
