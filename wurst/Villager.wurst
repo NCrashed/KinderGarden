@@ -36,7 +36,7 @@ import Producer
 
 /// Wrapper around user that controls state of villager (hungry, heat, sick) 
 /// and his AI. 
-public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
+public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer, WoodProducer, WoodConsumer
     Gender gender 
     real nutrition = 1.0 // from 0 to 1 
     real heat = 1.0  // from 0 to 1
@@ -56,18 +56,37 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
     static timer aiTickTimer = CreateTimer()
     use StaticArray<Villager>
 
+    /// Helper that is called when producing or consuming values changes
+    private function producingConsumingChanged()
+        FoodConsumerChanged.triggerAll(this)
+        FoodProducerChanged.triggerAll(this)
+        WoodConsumerChanged.triggerAll(this)
+        WoodProducerChanged.triggerAll(this)
+    
+    /// Helper that is called when producing or consuming should be registered in other systems
+    private function producingConsumingAdded()
+        FoodConsumerAdded.triggerAll(this)
+        FoodProducerAdded.triggerAll(this)
+        WoodConsumerAdded.triggerAll(this)
+        WoodProducerAdded.triggerAll(this)
+    
+    /// Helper that is called when producing or consuming should be removed in other systems
+    private function producingConsumingRemoved()
+        FoodConsumerRemoved.triggerAll(this)
+        FoodProducerRemoved.triggerAll(this)
+        WoodConsumerRemoved.triggerAll(this)
+        WoodProducerRemoved.triggerAll(this)
+        
     private function selfInit(Gender pgender)
         gender = pgender
         let collectFood = new TaskCollectFood()
         tasks = new LinkedList<AITask<Villager>>()
         tasks.add(collectFood)
-        FoodConsumerAdded.triggerAll(this)
-        FoodProducerAdded.triggerAll(this)
+        producingConsumingAdded()
         addArrayItem(this)
 
     override function onDestroy()
-        FoodConsumerRemoved.triggerAll(this)
-        FoodProducerRemoved.triggerAll(this)
+        producingConsumingRemoved()
         arrayRemoveWithPatch() (Villager a) -> 
             return a == this
         if currentTask != null 
@@ -150,11 +169,47 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
     function foodProduceOwner() returns player 
         return GetOwningPlayer(u)
 
+    /// How much wood is consumed by the consumer per one second
+    function woodConsumedPerSecond() returns wood 
+        return wood(1)
+
+    /// If caller of the interface cannot provide wood for the consumer
+    /// he should call the function with 0 to apply effects of 
+    /// lacking of the resource and with 'woodPerTick' if the required
+    /// wood is consumed.
+    /// dt parameter holds amount of seconds since last tick 
+    function woodConsumed(wood consumed, real dt)
+        // TODO: here 
+
+    /// Get consuming category to aggregate results for player
+    function woodConsumeCategory() returns ConsumeCategory
+        return ConsumeCategory.PEACEFULL_POPULATION
+
+    /// Whom resources the consumer should consume
+    function woodConsumerOwner() returns player 
+        return GetOwningPlayer(u)
+
+    /// How much wood is produced per one second
+    function woodProducedPerSecond() returns wood
+        return wood(0) 
+
+    /// Called when a wood is produced by this producer (called by special thread)
+    /// dt parameter holds amount of seconds since last call. 
+    function woodProduced(wood produced, real dt)
+        
+    /// Get producing category to aggregate results for player
+    function woodProduceCategory() returns ProduceCategory
+        return ProduceCategory.VILLAGER
+
+    /// Who is owner, whom resources are increased
+    function woodProduceOwner() returns player 
+        return GetOwningPlayer(u)
+
     /// Perform task calculations for all known villagers 
     static function tickAIAll()
         for i=0 to arrayLength()-1
             getArrayItem(i).tickAI()
-    
+
     /// Perform task calculation for current village 
     function tickAI()
         if isIdle 
@@ -162,14 +217,12 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
             if currentTask == null 
                 currentTask = nextTask
                 currentTask.startTask(this)
-                FoodConsumerChanged.triggerAll(this)
-                FoodProducerChanged.triggerAll(this)
+                producingConsumingChanged()
             else if currentTask.taskPriority() < nextTask.taskPriority() or currentTask.isFinished()  
                 currentTask.endTask(this)
                 currentTask = nextTask 
                 currentTask.startTask(this)
-                FoodConsumerChanged.triggerAll(this)
-                FoodProducerChanged.triggerAll(this)
+                producingConsumingChanged()
 
     /// Drop current order and mark the villager idle if the input flag is true
     function dropCurrentTask(bool markIdle)
@@ -178,8 +231,7 @@ public class Villager extends UnitWrapper implements FoodConsumer, FoodProducer
         if currentTask != null 
             currentTask.endTask(this)
             currentTask = null 
-            FoodConsumerChanged.triggerAll(this)
-            FoodProducerChanged.triggerAll(this)
+            producingConsumingChanged()
         if not isIdle
             idleTimer.setData(this castTo int)
             idleTimer.startPeriodic(villagerIdleTimeout) -> 

@@ -32,12 +32,17 @@ function setupResources(player p)
     SetPlayerState(p, PLAYER_STATE_RESOURCE_GOLD, 50)
     SetFloatGameState(GAME_STATE_TIME_OF_DAY, 12.00)
 
+FoodProducers foodProducers = new FoodProducers()
+FoodConsumers foodConsumers = new FoodConsumers() 
+WoodProducers woodProducers = new WoodProducers()
+WoodConsumers woodConsumers = new WoodConsumers() 
+
 init
-    let producers = new FoodProducers()
-    let consumers = new FoodConsumers()
     doPeriodically(resourceTick) cb ->
-        producers.apply()
-        consumers.apply()
+        foodProducers.apply()
+        foodConsumers.apply()
+        woodProducers.apply()
+        woodConsumers.apply()
         ResourceBoard.updateAllNets()
 
     nullTimer() ->

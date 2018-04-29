@@ -85,3 +85,75 @@ public class FoodConsumerChanged
         let n = arrayLength()
         for i=0 to n-1 
             getArrayItem(i).foodConsumerChanged(v)
+
+/// Defines an entity that consumes wood periodically
+///
+/// Note that all consumers should also handle add/remove 
+/// events via 'WoodConsumerAdded' and 'WoodConsumerRemoved'
+public interface WoodConsumer
+    /// How much wood is consumed by the consumer per one second
+    function woodConsumedPerSecond() returns wood 
+    /// If caller of the interface cannot provide wood for the consumer
+    /// he should call the function with 0 to apply effects of 
+    /// lacking of the resource and with 'woodPerTick' if the required
+    /// wood is consumed.
+    /// dt parameter holds amount of seconds since last tick 
+    function woodConsumed(wood consumed, real dt)
+    /// Get consuming category to aggregate results for player
+    function woodConsumeCategory() returns ConsumeCategory
+    /// Whom resources the consumer should consume
+    function woodConsumerOwner() returns player 
+
+/// Callback that is called when new wood consumer is added to global array
+public interface WoodConsumerAddedCb 
+    function woodConsumerAdded(WoodConsumer v)
+
+/// Global array for callbacks for adding new wood consumer event
+public class WoodConsumerAdded 
+    use StaticArray<WoodConsumerAddedCb>
+    
+    /// Call this to add new consumer callback
+    static function register(WoodConsumerAddedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodConsumer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodConsumerAdded(v)
+
+/// Callback that is called when new wood consumer is added to global array
+public interface WoodConsumerRemovedCb 
+    function woodConsumerRemoved(WoodConsumer v)
+
+/// Global array of callbacks for wood consumer removal event
+public class WoodConsumerRemoved 
+    use StaticArray<WoodConsumerRemovedCb>
+
+    /// Call this to add new callback for consumer removed event
+    static function register(WoodConsumerRemovedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodConsumer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodConsumerRemoved(v)
+
+/// Callback that is called when a wood consumer is changes stats
+public interface WoodConsumerChangedCb 
+    function woodConsumerChanged(WoodConsumer v)
+
+/// Here callbacks for event about changed consumer stats are stored
+public class WoodConsumerChanged
+    use StaticArray<WoodConsumerChangedCb>
+
+    /// Call this to add new callback
+    static function register(WoodConsumerChangedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodConsumer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodConsumerChanged(v) 

@@ -81,3 +81,77 @@ public class FoodProducers implements FoodProducerAddedCb, FoodProducerRemovedCb
     /// Called when food producer changes stats
     function foodProducerChanged(FoodProducer _v) 
         recalcProduction()
+
+/// Holds array of current wood producers
+public class WoodProducers implements WoodProducerAddedCb, WoodProducerRemovedCb, WoodProducerChangedCb
+    use StaticArray<WoodProducer>
+    hashtable productionInfo = InitHashtable()
+
+    construct()
+        WoodProducerAdded.register(this)
+        WoodProducerRemoved.register(this)
+        WoodProducerChanged.register(this)
+
+    /// Iterate over all producers and produce wood
+    function apply()
+        clearWoodProduce()
+        let n = arrayLength()
+        for i=0 to n-1 
+            let producer = getArrayItem(i)
+            let owner = producer.woodProduceOwner()
+            let produceps =  producer.woodProducedPerSecond()
+            let produced = produceps.value * resourceTick
+            real oldValue = I2R(GetPlayerState(owner, PLAYER_STATE_RESOURCE_LUMBER))
+            integer newValue = R2I(oldValue + produced)
+            SetPlayerState(owner, PLAYER_STATE_RESOURCE_LUMBER, newValue)
+            producer.woodProduced(wood(produced), resourceTick)
+            addWoodProduce(owner, produceps)
+
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            ResourceBoard.getByPlayer(p).setWoodProduced(getWoodTotalProduce(p)) 
+    
+    /// Recalculate all production speed 
+    function recalcProduction()
+        clearWoodProduce()
+        let n = arrayLength()
+        for i=0 to n-1 
+            let producer = getArrayItem(i)
+            let owner = producer.woodProduceOwner()
+            let produceps =  producer.woodProducedPerSecond()
+            addWoodProduce(owner, produceps)
+        
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            ResourceBoard.getByPlayer(p).setWoodProduced(getWoodTotalProduce(p)) 
+    
+    /// Remove all stats from hashtable 
+    function clearWoodProduce()
+        for i=0 to playingPlayers-1
+            let p = playerFromIndex(i)
+            productionInfo.saveReal(p.getHandleId(), 0, 0)
+    
+    /// Add consumation of wood to counter of player
+    function addWoodProduce(player p, wood v)
+        let pk = p.getHandleId()
+        let oldval = productionInfo.loadReal(pk, 0)
+        productionInfo.saveReal(pk, 0, oldval + v.value)
+
+    /// Get total speed of wood consumation per second last tick
+    function getWoodTotalProduce(player p) returns wood 
+        return wood(productionInfo.loadReal(p.getHandleId(), 0)) 
+
+    /// Add all added consumers using intermediate array 
+    function woodProducerAdded(WoodProducer v)
+        addArrayItem(v)
+        recalcProduction()
+        
+    /// Remove all removed consumer using intermediate array
+    function woodProducerRemoved(WoodProducer v)
+        arrayRemoveWithPatch() (WoodProducer a) -> 
+            return a == v 
+        recalcProduction()
+
+    /// Called when wood producer changes stats
+    function woodProducerChanged(WoodProducer _v) 
+        recalcProduction()

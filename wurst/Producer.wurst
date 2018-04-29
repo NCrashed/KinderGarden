@@ -78,3 +78,72 @@ public class FoodProducerChanged
         let n = arrayLength()
         for i=0 to n-1 
             getArrayItem(i).foodProducerChanged(v)
+
+/// Defines an entity that produces wood periodically
+///
+/// Note that all producers should also handle add/remove 
+/// events via 'WoodProducerAdded' and 'WoodProducerRemoved'
+public interface WoodProducer 
+    /// How much wood is produced per one second
+    function woodProducedPerSecond() returns wood
+    /// Called when a wood is produced by this producer (called by special thread)
+    /// dt parameter holds amount of seconds since last call. 
+    function woodProduced(wood produced, real dt)
+    /// Get producing category to aggregate results for player
+    function woodProduceCategory() returns ProduceCategory
+    /// Who is owner, whom resources are increased
+    function woodProduceOwner() returns player 
+
+/// Callback that is called when new wood producer is added to global array
+public interface WoodProducerAddedCb 
+    function woodProducerAdded(WoodProducer v)
+    
+/// Global array with callbacks for wood producer addition event
+public class WoodProducerAdded 
+    use StaticArray<WoodProducerAddedCb> 
+
+    /// Call this to add new consumer callback
+    static function register(WoodProducerAddedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodProducerAdded(v)
+
+/// Callback that is called when new wood producer is added to global array
+public interface WoodProducerRemovedCb 
+    function woodProducerRemoved(WoodProducer v)
+
+/// Global array with callbacks for wood producer removal event
+public class WoodProducerRemoved 
+    use StaticArray<WoodProducerRemovedCb>
+
+    /// Call this to add new callback for producer removed event
+    static function register(WoodProducerRemovedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodProducerRemoved(v)
+
+/// Callback that is called when wood producer updates its stats
+public interface WoodProducerChangedCb 
+    function woodProducerChanged(WoodProducer v)
+
+/// Global array with callbacks for wood producer changed event
+public class WoodProducerChanged 
+    use StaticArray<WoodProducerChangedCb>
+
+    /// Call this to add new callback for producer changed event
+    static function register(WoodProducerChangedCb v)
+        addArrayItem(v)
+
+    /// Triggers all stored callbacks
+    static function triggerAll(WoodProducer v)
+        let n = arrayLength()
+        for i=0 to n-1 
+            getArrayItem(i).woodProducerChanged(v)
